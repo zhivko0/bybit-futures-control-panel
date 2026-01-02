@@ -1,0 +1,17 @@
+services:
+  web:
+    build: .
+    restart: unless-stopped
+    container_name: site
+    environment:
+      - TZ=Europe/Sofia
+    ports:
+      - 8090:8090
+    volumes:
+      - ./html:/var/www/html
+      - ./config/apache2/000-default.conf:/etc/apache2/sites-available/000-default.conf
+      - ./config/apache2/ports.conf:/etc/apache2/ports.conf
+      - ./config/apache2/apache2.conf:/etc/apache2/apache2.conf
+      - ./config/apache2/security.conf:/etc/apache2/conf-available/security.conf
+      - ./config/php/php.ini:/usr/local/etc/php/conf.d/custom-php.ini
+      - ./logs:/var/log/apache2
