@@ -1,0 +1,49 @@
+<Files closePosition.php>
+AuthName "Authentication"
+AuthType Basic
+AuthUserFile /var/www/html/.htpasswd
+Require user admin
+</Files>
+<Files modifyTpSl.php>
+AuthName "Authentication"
+AuthType Basic
+AuthUserFile /var/www/html/.htpasswd
+Require user admin
+</Files>
+<Files modifyMargin.php>
+AuthName "Authentication"
+AuthType Basic
+AuthUserFile /var/www/html/.htpasswd
+Require user admin
+</Files>
+<Files cancelOrder.php>
+AuthName "Authentication"
+AuthType Basic
+AuthUserFile /var/www/html/.htpasswd
+Require user admin
+</Files>
+<Files createOrder.php>
+AuthName "Authentication"
+AuthType Basic
+AuthUserFile /var/www/html/.htpasswd
+Require user admin
+</Files>
+<Files setLeverage.php>
+AuthName "Authentication"
+AuthType Basic
+AuthUserFile /var/www/html/.htpasswd
+Require user admin
+</Files>
+<Files .htaccess>
+order allow,deny
+deny from all
+</Files>
+<Files .htpasswd>
+order allow,deny
+deny from all
+</Files>
+<Files config.php>
+order allow,deny
+deny from all
+</Files>
+AddDefaultCharset UTF-8

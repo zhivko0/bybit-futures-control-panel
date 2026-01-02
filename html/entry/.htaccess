@@ -1,0 +1,17 @@
+<Files createEntryOrders.php>
+AuthName "Authentication"
+AuthType Basic
+AuthUserFile /var/www/html/.htpasswd
+Require user admin
+</Files>
+<Files cancelEntryOrders.php>
+AuthName "Authentication"
+AuthType Basic
+AuthUserFile /var/www/html/.htpasswd
+Require user admin
+</Files>
+<Files .htaccess>
+order allow,deny
+deny from all
+</Files>
+AddDefaultCharset UTF-8

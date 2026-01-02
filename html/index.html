@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BTC Position - Bybit</title>
+    <link rel="icon" href="btc.png" sizes="32x32">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        #container {
+            width: 80%;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .card {
+            background-color: #ffffff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .position-data {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .position-data div {
+            flex: 1 1 45%;
+            margin: 10px 0;
+        }
+        .position-data div label {
+            font-weight: bold;
+            color: #555;
+        }
+        .position-data div span {
+            display: block;
+            margin-top: 5px;
+            font-size: 1.5em;
+        }
+        .pnl-positive {
+            color: #2ecc71;
+        }
+        .pnl-negative {
+            color: #e74c3c;
+        }
+        .liq-warning {
+            color: #e67e22;
+        }
+        .side-buy {
+            color: #2ecc71;
+        }
+        .side-sell {
+            color: #e74c3c;
+        }
+        #actionButtons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .action-button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            color: white;
+            transition: background-color 0.3s;
+        }
+        #closePositionButton {
+            background-color: #e74c3c;
+        }
+        #closePositionButton:hover {
+            background-color: #c0392b;
+        }
+        #modifyTpSlButton {
+            background-color: #3498db;
+        }
+        #modifyTpSlButton:hover {
+            background-color: #2980b9;
+        }
+        #modifyMarginButton {
+            background-color: #e67e22;
+        }
+        #modifyMarginButton:hover {
+            background-color: #d35400;
+        }
+        #createOrderButton {
+            background-color: #2ecc71;
+        }
+        #createOrderButton:hover {
+            background-color: #27ae60;
+        }
+        #setLeverageButton {
+            background-color: #9b59b6;
+        }
+        #setLeverageButton:hover {
+            background-color: #8e44ad;
+        }
+        #ordersCard {
+            margin-top: 20px;
+        }
+        #ordersTable {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+        #ordersTable th, #ordersTable td {
+            border: 1px solid #ddd;
+            padding: 4px;
+            text-align: center;
+        }
+        #ordersTable th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .order-side-buy {
+            color: #2ecc71;
+        }
+        .order-side-sell {
+            color: #e74c3c;
+        }
+        .cancel-button {
+            background-color: transparent;
+            border: none;
+            color: #e74c3c;
+            font-size: 1em;
+            padding: 0;
+            cursor: pointer;
+        }
+        .cancel-button:hover {
+            color: #c0392b;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 10;
+            padding-top: 60px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+            position: relative;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: black;
+        }
+        #tpSlForm label, #modifyMarginForm label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        #tpSlForm input, #modifyMarginForm input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            box-sizing: border-box;
+        }
+        #tpSlForm button, #modifyMarginForm button, #createOrderForm button, #setLeverageForm button {
+            margin-top: 20px;
+            padding: 12px;
+            width: 100%;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+        #tpSlForm button:hover, #modifyMarginForm button:hover, #createOrderForm button:hover, #setLeverageForm button:hover {
+            background-color: #2980b9;
+        }
+        .modify-options {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 15px;
+        }
+        .modify-options label {
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .modify-options input {
+            margin-right: 5px;
+        }
+        #closePositionModal .modal-content {
+            max-width: 400px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            position: relative;
+        }
+        #closePositionModal .modal-content .close {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+        }
+        #closePositionModal .modal-content h2 {
+            margin-bottom: 20px;
+        }
+        #closePositionModal .modal-content p {
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            color: #555;
+        }
+        #closeType {
+            width:100%;
+            margin-bottom: 10px;
+        }
+        #partialCloseContainer {
+            display:none;
+            margin-bottom: 20px;
+        }
+        #partialCloseContainer label {
+            font-weight:bold;
+            display:block;
+            margin-bottom:5px;
+        }
+        #partialCloseContainer input {
+            width:100%;
+            padding:8px;
+            box-sizing:border-box;
+        }
+        #closePositionModal .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        #closePositionModal .modal-content .action-button {
+            flex: 1;
+            padding: 12px 0;
+        }
+        #confirmCloseButton {
+            background-color: #e74c3c;
+        }
+        #confirmCloseButton:hover {
+            background-color: #c0392b;
+        }
+        #cancelCloseButton {
+            background-color: #7f8c8d;
+        }
+        #cancelCloseButton:hover {
+            background-color: #95a5a6;
+        }
+        @media (max-width: 600px) {
+            .position-data div {
+                flex: 1 1 100%;
+            }
+            #actionButtons {
+                flex-direction: column;
+                align-items: center;
+            }
+            .action-button {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            #closePositionModal .modal-content .action-button {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            #closePositionModal .modal-content .button-container {
+                flex-direction: column;
+            }
+        }
+        #createOrderForm label {
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+        }
+        #createOrderForm select, #createOrderForm input[type="number"], #createOrderForm input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            box-sizing: border-box;
+        }
+        .order-options {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .order-options > div {
+            flex: 1;
+            margin: 0 5px;
+        }
+        .potential-pnl {
+            font-size: 0.8em;
+            color: #999;
+            display: block;
+            margin-top: 3px;
+        }
+    </style>
+</head>
+<body>
+    <script src="https://zhivko.org/wakeLock.js"></script>
+    <div id="container">
+        <div id="result" class="card">
+            <h1>Position Data</h1>
+            <div class="position-data">
+                <div>
+                    <label>Symbol:</label>
+                    <span id="symbol">Loading...</span>
+                </div>
+                <div>
+                    <label>Leverage:</label>
+                    <span id="leverage">Loading...</span>
+                </div>
+                <div>
+                    <label>Entry Price:</label>
+                    <span id="avgPrice">Loading...</span>
+                </div>
+                <div>
+                    <label>Position Value:</label>
+                    <span id="positionValue">Loading...</span>
+                </div>
+                <div>
+                    <label>Unrealised PnL:</label>
+                    <span id="unrealisedPnl">Loading...</span>
+                </div>
+                <div>
+                    <label>Mark Price:</label>
+                    <span id="markPrice">Loading...</span>
+                </div>
+                <div>
+                    <label>Side:</label>
+                    <span id="side">Loading...</span>
+                </div>
+                <div>
+                    <label>Size:</label>
+                    <span id="size">Loading...</span>
+                </div>
+                <div>
+                    <label>Liquidation Price:</label>
+                    <span id="liqPrice" class="liq-warning">Loading...</span>
+                </div>
+                <div>
+                    <label>Position Margin:</label>
+                    <span id="positionBalance">Loading...</span>
+                </div>
+                <div style="flex: 1 1 100%; display: flex; justify-content: space-between;">
+                    <div style="flex: 1 1 30%;">
+                        <label>Take Profit:</label>
+                        <span id="takeProfit">Loading...</span>
+                        <small id="takeProfitPnL" class="potential-pnl"></small>
+                    </div>
+                    <div style="flex: 1 1 30%;">
+                        <label>Stop Loss:</label>
+                        <span id="stopLoss">Loading...</span>
+                        <small id="stopLossPnL" class="potential-pnl"></small>
+                    </div>
+                    <div style="flex: 1 1 30%;">
+                        <label>Trailing Stop:</label>
+                        <span id="trailingStop">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="actionButtons">
+            <button id="createOrderButton" class="action-button">Create Order</button>
+            <button id="modifyTpSlButton" class="action-button">Modify TP/SL/TS</button>
+            <button id="modifyMarginButton" class="action-button">Modify Margin</button>
+            <button id="setLeverageButton" class="action-button">Set Leverage</button>
+            <button id="closePositionButton" class="action-button">Close Position</button>
+        </div>
+
+        <div id="closePositionModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Confirm Closing</h2>
+                <p>Are you sure you want to close this position?</p>
+                <label for="closeType" style="font-weight:bold; margin-bottom:5px;display:block;">Close Type:</label>
+                <select id="closeType">
+                    <option value="entire" selected>Entire</option>
+                    <option value="partial">Partial</option>
+                </select>
+                <div id="partialCloseContainer">
+                    <label for="partialCloseQty">Close Size (BTC):</label>
+                    <input type="number" id="partialCloseQty" name="partialCloseQty" min="0.001" step="0.001">
+                </div>
+                <div class="button-container">
+                    <button id="confirmCloseButton" class="action-button">Yes, close position</button>
+                    <button id="cancelCloseButton" class="action-button">No, don't close</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="tpSlModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Modify TP/SL/TS</h2>
+                <form id="tpSlForm">
+                    <div class="modify-options">
+                        <label>
+                            <input type="radio" name="modifyOption" value="tp" checked>
+                            Modify Take Profit (TP)
+                        </label>
+                        <label>
+                            <input type="radio" name="modifyOption" value="sl">
+                            Modify Stop Loss (SL)
+                        </label>
+                        <label>
+                            <input type="radio" name="modifyOption" value="ts">
+                            Modify Trailing Stop (TS)
+                        </label>
+                    </div>
+                    <div id="tpInputField">
+                        <label for="tpPrice">Take Profit:</label>
+                        <input type="number" id="tpPrice" name="tpPrice" step="0.1">
+                    </div>
+                    <div id="slInputField" style="display: none;">
+                        <label for="slPrice">Stop Loss:</label>
+                        <input type="number" id="slPrice" name="slPrice" step="0.1">
+                    </div>
+                    <div id="tsInputField" style="display: none;">
+                        <label for="tsPrice">Trailing Stop:</label>
+                        <input type="number" id="tsPrice" name="tsPrice" step="0.1">
+                        <label for="tsActivePrice">Activation Price:</label>
+                        <input type="number" id="tsActivePrice" name="tsActivePrice" step="0.1" placeholder="Optional">
+                    </div>
+                    <button type="submit">Submit</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="modifyMarginModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Modify Margin</h2>
+                <form id="modifyMarginForm">
+                    <label for="marginAmount">Margin Amount:</label>
+                    <input type="text" inputmode="numeric" id="marginAmount" name="marginAmount" step="0.1">
+                    <p id="marginInfo"></p>
+                    <button type="submit">Submit</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="createOrderModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>New Order</h2>
+                <form id="createOrderForm">
+                    <label for="orderSide">Side:</label>
+                    <select id="orderSide" name="orderSide">
+                        <option value="Buy">Buy</option>
+                        <option value="Sell">Sell</option>
+                    </select>
+
+                    <label for="orderType">Order Type:</label>
+                    <select id="orderType" name="orderType">
+                        <option value="Limit" selected>Limit</option>
+                        <option value="Market">Market</option>
+                    </select>
+
+                    <label for="orderQty">Quantity (BTC):</label>
+                    <input type="number" id="orderQty" name="orderQty" step="0.001" placeholder="0.05" required>
+
+                    <div id="priceField">
+                        <label for="orderPrice">Price:</label>
+                        <input type="number" id="orderPrice" name="orderPrice" step="0.1" placeholder="100000">
+                    </div>
+                    <button type="submit">Submit</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="setLeverageModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Set Leverage</h2>
+                <form id="setLeverageForm">
+                    <label>
+                        <input type="checkbox" id="separateLeverageCheckbox">
+                        Set separate leverage for Buy and Sell
+                    </label>
+                    <div id="singleLeverageContainer">
+                        <label for="singleLeverage">Leverage:</label>
+                        <input type="number" id="singleLeverage" name="singleLeverage" step="0.1" min="1" max="100">
+                    </div>
+                    <div id="separateLeverageContainer" style="display:none;">
+                        <label for="buyLeverage">Buy Leverage:</label>
+                        <input type="number" id="buyLeverage" name="buyLeverage" step="0.1" min="1" max="100">
+                        <label for="sellLeverage">Sell Leverage:</label>
+                        <input type="number" id="sellLeverage" name="sellLeverage" step="0.1" min="1" max="100">
+                    </div>
+                    <button type="submit">Submit</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="ordersCard" class="card">
+            <h2>Open Orders</h2>
+            <table id="ordersTable">
+                <thead>
+                    <tr>
+                        <th>Side</th>
+                        <th>Quantity (BTC)</th>
+                        <th>Execution Price</th>
+                        <th>Cancel</th>
+                    </tr>
+                </thead>
+                <tbody id="ordersBody">
+                    <tr>
+                        <td colspan="4">Loading...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        let currentPosition = null;
+
+        async function fetchPositions() {
+            try {
+                const response = await fetch('fetchPosition.php');
+                const data = await response.json();
+                if (data.result && data.result.list && data.result.list.length > 0) {
+                    displayPosition(data.result.list[0]);
+                } else {
+                    document.getElementById('result').textContent = 'No position data available.';
+                }
+            } catch (error) {
+                console.error('Error fetching position:', error);
+                document.getElementById('result').textContent = 'Error fetching position: ' + error.message;
+            }
+        }
+
+        function displayPosition(position) {
+            currentPosition = position;
+
+            document.getElementById('symbol').textContent = position.symbol || '-';
+            document.getElementById('leverage').textContent = position.leverage ? `${position.leverage}x` : '-';
+            document.getElementById('avgPrice').textContent = position.avgPrice && position.avgPrice !== "0" ? parseFloat(position.avgPrice).toFixed(2) : '-';
+            document.getElementById('positionValue').textContent = position.positionValue && position.positionValue !== "" ? parseFloat(position.positionValue).toFixed(2) : '-';
+            document.getElementById('positionBalance').textContent = position.positionBalance && position.positionBalance !== "" ? parseFloat(position.positionBalance).toFixed(2) : '-';
+            document.getElementById('markPrice').textContent = position.markPrice ? parseFloat(position.markPrice).toFixed(2) : '-';
+            document.getElementById('size').textContent = position.size || '0';
+            document.getElementById('liqPrice').textContent = position.liqPrice && position.liqPrice !== "" ? parseFloat(position.liqPrice).toFixed(2) : '-';
+            document.getElementById('takeProfit').textContent = position.takeProfit && position.takeProfit !== "" ? position.takeProfit : '-';
+            document.getElementById('stopLoss').textContent = position.stopLoss && position.stopLoss !== "" ? position.stopLoss : '-';
+            document.getElementById('trailingStop').textContent = position.trailingStop && position.trailingStop !== "0" ? position.trailingStop : '-';
+
+            currentPosition.positionIM = parseFloat(position.positionIM || 0);
+            currentPosition.positionBalance = parseFloat(position.positionBalance || 0);
+            currentPosition.positionValue = parseFloat(position.positionValue || 0);
+
+            const sideElement = document.getElementById('side');
+            sideElement.textContent = position.side && position.side !== "" ? position.side : '-';
+            if (position.side && position.side.toLowerCase() === 'buy') {
+                sideElement.className = 'side-buy';
+            } else if (position.side && position.side.toLowerCase() === 'sell') {
+                sideElement.className = 'side-sell';
+            } else {
+                sideElement.className = '';
+            }
+
+            const unrealisedPnlElement = document.getElementById('unrealisedPnl');
+            let unrealisedPnl = position.unrealisedPnl && position.unrealisedPnl !== "" ? parseFloat(position.unrealisedPnl) : 0;
+            let positionBalance = currentPosition.positionBalance;
+            let percentage = positionBalance > 0 ? (unrealisedPnl / positionBalance) * 100 : 0;
+            let pnlText = unrealisedPnl.toFixed(2) + " (" + percentage.toFixed(2) + "%)";
+            unrealisedPnlElement.textContent = pnlText;
+
+            if (unrealisedPnl > 0) {
+                unrealisedPnlElement.className = 'pnl-positive';
+            } else {
+                unrealisedPnlElement.className = 'pnl-negative';
+            }
+
+            if (position.takeProfit && parseFloat(position.takeProfit) !== 0) {
+                const entryPrice = parseFloat(position.avgPrice || 0);
+                const size = parseFloat(position.size || 0);
+                const margin = parseFloat(position.positionBalance || 0);
+                const tpPrice = parseFloat(position.takeProfit);
+                let potentialTpPnl = 0;
+                if (position.side === 'Buy') {
+                    potentialTpPnl = (tpPrice - entryPrice) * size;
+                } else if (position.side === 'Sell') {
+                    potentialTpPnl = (entryPrice - tpPrice) * size;
+                }
+                const tpPercent = margin !== 0 ? (potentialTpPnl / margin) * 100 : 0;
+                document.getElementById('takeProfitPnL').textContent = `$${potentialTpPnl.toFixed(2)} (${tpPercent.toFixed(2)}%)`;
+            } else { document.getElementById('takeProfitPnL').textContent = ''; }
+
+            if (position.stopLoss && parseFloat(position.stopLoss) !== 0) {
+                const entryPrice = parseFloat(position.avgPrice || 0);
+                const size = parseFloat(position.size || 0);
+                const margin = parseFloat(position.positionBalance || 0);
+                const slPrice = parseFloat(position.stopLoss);
+                let potentialSlPnl = 0;
+                if (position.side === 'Buy') {
+                    potentialSlPnl = (slPrice - entryPrice) * size;
+                } else if (position.side === 'Sell') {
+                    potentialSlPnl = (entryPrice - slPrice) * size;
+                }
+                const slPercent = margin !== 0 ? (potentialSlPnl / margin) * 100 : 0;
+                document.getElementById('stopLossPnL').textContent = `$${potentialSlPnl.toFixed(2)} (${slPercent.toFixed(2)}%)`;
+            } else { document.getElementById('stopLossPnL').textContent = ''; }
+        }
+
+        async function fetchOrders() {
+            try {
+                const response = await fetch('fetchOrders.php');
+                const data = await response.json();
+                displayOrders(data.result.list);
+            } catch (error) {
+                console.error('Error fetching orders:', error);
+                document.getElementById('ordersBody').innerHTML = '<tr><td colspan="4">Error fetching orders: ' + error.message + '</td></tr>';
+            }
+        }
+
+        function displayOrders(orders) {
+            const ordersBody = document.getElementById('ordersBody');
+            ordersBody.innerHTML = '';
+            let hasOrders = false;
+
+            orders.forEach(order => {
+                if (parseFloat(order.price) === 0) {
+                    return;
+                }
+                hasOrders = true;
+
+                const row = document.createElement('tr');
+
+                const sideCell = document.createElement('td');
+                sideCell.textContent = order.side;
+                sideCell.className = order.side.toLowerCase() === 'buy' ? 'order-side-buy' : 'order-side-sell';
+                row.appendChild(sideCell);
+
+                const qtyCell = document.createElement('td');
+                qtyCell.textContent = order.qty;
+                row.appendChild(qtyCell);
+
+                const priceCell = document.createElement('td');
+                priceCell.textContent = order.price;
+                row.appendChild(priceCell);
+
+                const cancelCell = document.createElement('td');
+                const cancelButton = document.createElement('button');
+                cancelButton.textContent = '×';
+                cancelButton.className = 'cancel-button';
+
+                cancelButton.addEventListener('click', function() {
+                    cancelOrder(order.orderId);
+                });
+
+                cancelCell.appendChild(cancelButton);
+                row.appendChild(cancelCell);
+
+                ordersBody.appendChild(row);
+            });
+
+            if (!hasOrders) {
+                ordersBody.innerHTML = '<tr><td colspan="4">No open orders.</td></tr>';
+            }
+        }
+
+        function cancelOrder(orderId) {
+            if (!confirm('Are you sure you want to cancel this order?')) {
+                return;
+            }
+
+            let formData = new FormData();
+            formData.append('orderId', orderId);
+
+            fetch('cancelOrder.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                return response.json().catch(() => {
+                    throw new Error('Invalid JSON response');
+                });
+            })
+            .then(data => {
+                if (data.retCode == 0) {
+                    alert('Order cancelled successfully.');
+                } else {
+                    alert('Error cancelling order: ' + data.retMsg);
+                }
+            })
+            .catch(error => {
+                alert('Error cancelling order: ' + error.message);
+            });
+        }
+
+        var closePositionModal = document.getElementById('closePositionModal');
+        var closePositionSpan = closePositionModal.getElementsByClassName('close')[0];
+        var confirmCloseButton = document.getElementById('confirmCloseButton');
+        var cancelCloseButton = document.getElementById('cancelCloseButton');
+        var closeTypeSelect = document.getElementById('closeType');
+        var partialCloseContainer = document.getElementById('partialCloseContainer');
+        var partialCloseQtyInput = document.getElementById('partialCloseQty');
+
+        document.getElementById('closePositionButton').addEventListener('click', function() {
+            if (!currentPosition || currentPosition.size == 0 || currentPosition.size == "0") {
+                alert('No open position.');
+                return;
+            }
+            closePositionModal.style.display = 'block';
+        });
+
+        closeTypeSelect.addEventListener('change', function() {
+            if (this.value === 'partial') {
+                partialCloseContainer.style.display = 'block';
+            } else {
+                partialCloseContainer.style.display = 'none';
+            }
+        });
+
+        closePositionSpan.onclick = function() {
+            closePositionModal.style.display = 'none';
+        }
+
+        cancelCloseButton.onclick = function() {
+            closePositionModal.style.display = 'none';
+        }
+
+        confirmCloseButton.onclick = function() {
+            const tradeSide = currentPosition.side && currentPosition.side.toLowerCase() === 'buy' ? 'Sell' : 'Buy';
+            const closeType = closeTypeSelect.value;
+            let tradeQty;
+
+            if (closeType === 'entire') {
+                tradeQty = currentPosition.size;
+            } else {
+                let partialQty = parseFloat(partialCloseQtyInput.value);
+                if (isNaN(partialQty) || partialQty <= 0) {
+                    alert('Please enter a valid partial close size.');
+                    return;
+                }
+                let maxSize = parseFloat(currentPosition.size || 0);
+                if (partialQty > maxSize) {
+                    alert(`You cannot close more than the current position size (${maxSize}).`);
+                    return;
+                }
+                tradeQty = partialQty.toString();
+            }
+
+            let formData = new FormData();
+            formData.append('tradeSide', tradeSide);
+            formData.append('tradeQty', tradeQty);
+
+            fetch('closePosition.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                return response.json().catch(() => {
+                    throw new Error('Invalid JSON response');
+                });
+            })
+            .then(data => {
+                if (data.retCode == 0) {
+                    alert(`${closeType === 'entire' ? 'Position' : 'Partial position'} closed successfully.`);
+                } else {
+                    alert('Error closing position: ' + data.retMsg);
+                }
+                closePositionModal.style.display = 'none';
+            })
+            .catch(error => {
+                alert('Error closing position: ' + error.message);
+            });
+        }
+
+        var modal = document.getElementById('tpSlModal');
+        var btn = document.getElementById('modifyTpSlButton');
+        var span = modal.getElementsByClassName('close')[0];
+        var modifyOptions = document.getElementsByName('modifyOption');
+        var tpInputField = document.getElementById('tpInputField');
+        var slInputField = document.getElementById('slInputField');
+        var tsInputField = document.getElementById('tsInputField');
+
+        btn.onclick = function() {
+            if (!currentPosition || currentPosition.size == 0 || currentPosition.size == "0") {
+                alert('No open position.');
+                return;
+            }
+            modal.style.display = 'block';
+        }
+
+        span.onclick = function() {
+            modal.style.display = 'none';
+        }
+
+        modifyOptions.forEach(function(option) {
+            option.addEventListener('change', function() {
+                if (this.value === 'tp') {
+                    tpInputField.style.display = 'block';
+                    slInputField.style.display = 'none';
+                    tsInputField.style.display = 'none';
+                } else if (this.value === 'sl') {
+                    tpInputField.style.display = 'none';
+                    slInputField.style.display = 'block';
+                    tsInputField.style.display = 'none';
+                } else if (this.value === 'ts') {
+                    tpInputField.style.display = 'none';
+                    slInputField.style.display = 'none';
+                    tsInputField.style.display = 'block';
+                }
+            });
+        });
+
+        document.getElementById('tpSlForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            var selectedOption = document.querySelector('input[name="modifyOption"]:checked').value;
+            var formData = new FormData();
+
+            if (selectedOption === 'tp') {
+                var tpPrice = document.getElementById('tpPrice').value;
+                if (!tpPrice) {
+                    alert('Please enter a TP price.');
+                    return;
+                }
+                formData.append('tpPrice', tpPrice);
+            } else if (selectedOption === 'sl') {
+                var slPrice = document.getElementById('slPrice').value;
+                if (!slPrice) {
+                    alert('Please enter an SL price.');
+                    return;
+                }
+                formData.append('slPrice', slPrice);
+            } else if (selectedOption === 'ts') {
+                var tsPrice = document.getElementById('tsPrice').value;
+                if (!tsPrice) {
+                    alert('Please enter a trailing stop price.');
+                    return;
+                }
+                formData.append('trailingStop', tsPrice);
+                var tsActivePrice = document.getElementById('tsActivePrice').value;
+                if (tsActivePrice && tsActivePrice.trim() !== '') {
+                    formData.append('tsActivePrice', tsActivePrice);
+                }
+            }
+
+            fetch('modifyTpSl.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                return response.json().catch(() => {
+                    throw new Error('Invalid JSON response');
+                });
+            })
+            .then(data => {
+                if (data.retCode == 0) {
+                    alert('TP/SL/TS modified successfully.');
+                } else {
+                    alert('Error modifying TP/SL/TS: ' + data.retMsg);
+                }
+                modal.style.display = 'none';
+            })
+            .catch(error => {
+                alert('Error modifying TP/SL/TS: ' + error.message);
+            });
+        });
+
+        var marginModal = document.getElementById('modifyMarginModal');
+        var modifyMarginBtn = document.getElementById('modifyMarginButton');
+        var closeMarginSpan = marginModal.getElementsByClassName('close')[0];
+        var marginForm = document.getElementById('modifyMarginForm');
+        var marginInfo = document.getElementById('marginInfo');
+
+        modifyMarginBtn.onclick = function() {
+            if (!currentPosition || currentPosition.size == 0 || currentPosition.size == "0") {
+                alert('No open position.');
+                return;
+            }
+
+            var positionBalance = currentPosition.positionBalance;
+            var positionIM = currentPosition.positionIM;
+            var positionValue = currentPosition.positionValue;
+
+            var maxReduceAmount = positionBalance - positionIM;
+            var maxAddAmount = positionValue - positionBalance;
+
+            marginInfo.innerHTML = 'You can add up to: <strong>' + maxAddAmount.toFixed(3) + '</strong><br>' + 'You can reduce up to: <strong>' + maxReduceAmount.toFixed(3) + '</strong>';
+            marginModal.style.display = 'block';
+        }
+
+        closeMarginSpan.onclick = function() {
+            marginModal.style.display = 'none';
+        }
+
+        marginForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            var marginAmount = parseFloat(document.getElementById('marginAmount').value);
+
+            if (isNaN(marginAmount) || marginAmount === 0) {
+                alert('Please enter a non-zero number.');
+                return;
+            }
+
+            var positionBalance = currentPosition.positionBalance;
+            var positionIM = currentPosition.positionIM;
+            var positionValue = currentPosition.positionValue;
+
+            var maxReduceAmount = positionBalance - positionIM;
+            var maxAddAmount = positionValue - positionBalance;
+
+            if (marginAmount < 0 && Math.abs(marginAmount) > maxReduceAmount) {
+                alert('You cannot reduce more than ' + maxReduceAmount.toFixed(3));
+                return;
+            }
+
+            if (marginAmount > 0 && marginAmount > maxAddAmount) {
+                alert('You cannot add more than ' + maxAddAmount.toFixed(3));
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append('marginAmount', marginAmount);
+
+            fetch('modifyMargin.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                return response.json().catch(() => {
+                    throw new Error('Invalid JSON response');
+                });
+            })
+            .then(data => {
+                if (data.retCode == 0) {
+                    alert('Margin modified successfully.');
+                } else {
+                    alert('Error modifying margin: ' + data.retMsg);
+                }
+                marginModal.style.display = 'none';
+            })
+            .catch(error => {
+                alert('Error modifying margin: ' + error.message);
+            });
+        });
+
+        var createOrderModal = document.getElementById('createOrderModal');
+        var createOrderButton = document.getElementById('createOrderButton');
+        var createOrderClose = createOrderModal.getElementsByClassName('close')[0];
+        var orderTypeSelect = document.getElementById('orderType');
+        var priceField = document.getElementById('priceField');
+        var createOrderForm = document.getElementById('createOrderForm');
+
+        createOrderButton.onclick = function() {
+            createOrderModal.style.display = 'block';
+        }
+
+        createOrderClose.onclick = function() {
+            createOrderModal.style.display = 'none';
+        }
+
+        orderTypeSelect.addEventListener('change', function() {
+            if (this.value === 'Market') {
+                priceField.style.display = 'none';
+            } else {
+                priceField.style.display = 'block';
+            }
+        });
+
+        createOrderForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            var orderSide = document.getElementById('orderSide').value;
+            var orderType = document.getElementById('orderType').value;
+            var orderQty = document.getElementById('orderQty').value;
+            var orderPrice = document.getElementById('orderPrice').value;
+
+            if (orderType === 'Limit' && (!orderPrice || parseFloat(orderPrice) <= 0)) {
+                alert('Please enter a valid price for limit order.');
+                return;
+            }
+
+            if (!orderQty || parseFloat(orderQty) < 0.001) {
+                alert('Please enter a valid quantity.');
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append('orderSide', orderSide);
+            formData.append('orderType', orderType);
+            formData.append('orderQty', orderQty);
+            if (orderType === 'Limit') {
+                formData.append('orderPrice', orderPrice);
+            } else {
+                formData.append('orderPrice', 0);
+            }
+
+            fetch('createOrder.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                return response.json().catch(() => {
+                    throw new Error('Invalid JSON response');
+                });
+            })
+            .then(data => {
+                if (data.retCode == 0) {
+                    alert('Order created successfully.');
+                } else {
+                    alert('Error creating order: ' + data.retMsg);
+                }
+                createOrderModal.style.display = 'none';
+            })
+            .catch(error => {
+                alert('Error creating order: ' + error.message);
+            });
+        });
+
+        var setLeverageModal = document.getElementById('setLeverageModal');
+        var setLeverageButton = document.getElementById('setLeverageButton');
+        var setLeverageClose = setLeverageModal.getElementsByClassName('close')[0];
+        var separateLeverageCheckbox = document.getElementById('separateLeverageCheckbox');
+        var singleLeverageContainer = document.getElementById('singleLeverageContainer');
+        var separateLeverageContainer = document.getElementById('separateLeverageContainer');
+        var setLeverageForm = document.getElementById('setLeverageForm');
+
+        setLeverageButton.onclick = function() {
+            setLeverageModal.style.display = 'block';
+        }
+
+        setLeverageClose.onclick = function() {
+            setLeverageModal.style.display = 'none';
+        }
+
+        separateLeverageCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                singleLeverageContainer.style.display = 'none';
+                separateLeverageContainer.style.display = 'block';
+            } else {
+                singleLeverageContainer.style.display = 'block';
+                separateLeverageContainer.style.display = 'none';
+            }
+        });
+
+        setLeverageForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            var formData = new FormData();
+
+            if (separateLeverageCheckbox.checked) {
+                var buyLev = parseFloat(document.getElementById('buyLeverage').value);
+                var sellLev = parseFloat(document.getElementById('sellLeverage').value);
+
+                if (isNaN(buyLev) || buyLev < 1 || buyLev > 100) {
+                    alert('Please enter a valid buy leverage between 1 and 100.');
+                    return;
+                }
+                if (isNaN(sellLev) || sellLev < 1 || sellLev > 100) {
+                    alert('Please enter a valid sell leverage between 1 and 100.');
+                    return;
+                }
+
+                formData.append('buyLeverage', buyLev);
+                formData.append('sellLeverage', sellLev);
+            } else {
+                var singleLev = parseFloat(document.getElementById('singleLeverage').value);
+                if (isNaN(singleLev) || singleLev < 1 || singleLev > 100) {
+                    alert('Please enter a valid leverage between 1 and 100.');
+                    return;
+                }
+
+                formData.append('buyLeverage', singleLev);
+                formData.append('sellLeverage', singleLev);
+            }
+
+            fetch('setLeverage.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                return response.json().catch(() => {
+                    throw new Error('Invalid JSON response');
+                });
+            })
+            .then(data => {
+                if (data.retCode == 0) {
+                    alert('Leverage set successfully.');
+                } else {
+                    alert('Error setting leverage: ' + data.retMsg);
+                }
+                setLeverageModal.style.display = 'none';
+            })
+            .catch(error => {
+                alert('Error setting leverage: ' + error.message);
+            });
+        });
+
+        function fetchData() {
+            fetchPositions();
+            fetchOrders();
+        }
+
+        setInterval(fetchData, 500);
+        fetchData();
+    </script>
+</body>
+</html>
